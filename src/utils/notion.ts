@@ -29,48 +29,55 @@ export const makeBlocks = (highlights: string[], type: BlockType): Block[] => {
   return blocks;
 };
 
-/* */
-export const makeHighlighsAndNoteBlocks = (highlights: Highlight[], type: BlockType): Block[] => {
+/* Function to make an array of Notion blocks given the array of clippings and notes
+   If the clipping is an highlight, the quote block is added; otherwise, a callout block is used for notes */
+export const makeHighlighsAndNoteBlocks = (highlights: Highlight[]): Block[] => {
   const blocks: Block[] = [];
   for (const highlight of highlights) {
     const position = " [" + highlight.startPosition + (highlight.endPosition != undefined ? "-" + highlight.endPosition : "") + "]"
     // truncate the highlight to a maximum length of 2000 character due to Notion API limitation
     const validHighlight =
-      highlight.highlight.length > 2000-position.length ? highlight.highlight.substring(0, 2000-position.length) : highlight.highlight;
-    const block: Block = {
-      object: "block",
-      type,
-    };
+      highlight.highlight.length > 2000 - position.length ? highlight.highlight.substring(0, 2000 - position.length) : highlight.highlight;
 
-    if(!highlight.isNote)
-    {
-      block[type] = {
-        text: [
-          {
-            type: "text",
-            text: {
-              content: validHighlight + position,
-              link: null,
+    if (!highlight.isNote) {
+      const block: Block = {
+        object: "block",
+        type: BlockType.quote,
+        quote: {
+          text: [
+            {
+              type: "text",
+              text: {
+                content: validHighlight + position,
+                link: null,
+              },
             },
-          },
-        ],
+          ],
+        }
       };
+      blocks.push(block);
     }
-    else{
-      block[type] = {
-        text: [
-          {
-            type: "text",
-            text: {
-              content: "*NOTE: " + validHighlight + position,
-              link: null,
+    else {
+      const block: Block = {
+        object: "block",
+        type: BlockType.callout,
+        callout: {
+          text: [
+            {
+              type: "text",
+              text: {
+                content: validHighlight + position,
+                link: null,
+              },
             },
-          },
-        ],
+          ],
+          icon: {
+            emoji: "⭐"
+          }
+        }
       };
-    } 
-   
-    blocks.push(block);
+      blocks.push(block);
+    }
   }
   return blocks;
 };

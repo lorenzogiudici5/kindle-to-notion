@@ -73,7 +73,7 @@ export class Notion {
             if(book.highlights.length <= 100) {
               await this.notion.appendBlockChildren(
                 bookId,
-                makeHighlighsAndNoteBlocks(book.highlights, BlockType.quote)
+                makeHighlighsAndNoteBlocks(book.highlights)
               );
             } else {
               // handle pagination if there are more than 100 highlights
@@ -81,7 +81,7 @@ export class Notion {
               while(highlightsTracker < book.highlights.length) {
                 await this.notion.appendBlockChildren(
                   bookId,
-                  makeHighlighsAndNoteBlocks(book.highlights.slice(highlightsTracker, highlightsTracker+99), BlockType.quote)
+                  makeHighlighsAndNoteBlocks(book.highlights.slice(highlightsTracker, highlightsTracker+99))
                 );
                 highlightsTracker+=99;
               }
@@ -105,7 +105,7 @@ export class Notion {
                   if(newBookId) {
                     await this.notion.appendBlockChildren(
                       newBookId, 
-                      makeHighlighsAndNoteBlocks(book.highlights.slice(highlightsTracker, highlightsTracker+99), BlockType.quote)
+                      makeHighlighsAndNoteBlocks(book.highlights.slice(highlightsTracker, highlightsTracker+99))
                     );
                     highlightsTracker += 99;
                   }
