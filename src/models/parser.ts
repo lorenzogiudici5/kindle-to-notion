@@ -42,23 +42,23 @@ export class Parser {
       const highlight = match[6];
       const isNote = false;
 
-      this.clippings.push({ title, author, highlight,  startPosition, endPosition, isNote});
+      this.clippings.push({ title, author, highlight, startPosition, endPosition, isNote });
     }
   };
 
-    /* Method add the parsed clippings to the clippings array */
-    addNoteToClippingsArray = (match: RegExpExecArray | null) => {
-      if (match) {
-        const title = match[1];
-        let author = formatAuthorName(match[2]);
-        const startPosition = Number(match[3]);
-        const endPosition = undefined;
-        const highlight = match[6];
-        const isNote = true;
-  
-        this.clippings.push({ title, author, highlight, startPosition, endPosition, isNote});
-      }
-    };
+  /* Method add the parsed clippings to the clippings array */
+  addNoteToClippingsArray = (match: RegExpExecArray | null) => {
+    if (match) {
+      const title = match[1];
+      let author = formatAuthorName(match[2]);
+      const startPosition = Number(match[3]);
+      const endPosition = undefined;
+      const highlight = match[6];
+      const isNote = true;
+
+      this.clippings.push({ title, author, highlight, startPosition, endPosition, isNote });
+    }
+  };
 
   /* Method to group clippings (highlights) by the title of the book */
   groupClippings = () => {
@@ -68,11 +68,13 @@ export class Parser {
       .map((clippings, title) => ({
         title,
         author: clippings[0].author,
-        highlights:clippings.map<Highlight>((clipping) => ({
+        highlights: clippings.map<Highlight>((clipping) => ({
           highlight: clipping.highlight,
           startPosition: clipping.startPosition,
           endPosition: clipping.endPosition,
-          isNote: clipping.isNote}))}))
+          isNote: clipping.isNote
+        }))
+      }))
       .value();
 
     // remove duplicates in the highlights for each book
@@ -101,13 +103,10 @@ export class Parser {
       const regex = new RegExp(this.regex.source);
       var match = regex.exec(clipping);
 
-      if(match != null)
-      {
-        console.log("Found highlight..")
+      if (match != null) {
         this.addToClippingsArray(match);
       }
-      else{
-        console.log("Finding note..")
+      else {
         const regexNote = new RegExp(this.regexNote.source);
         match = regexNote.exec(clipping);
         this.addNoteToClippingsArray(match);
