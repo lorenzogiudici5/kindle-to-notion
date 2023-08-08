@@ -1,11 +1,14 @@
 import _ from "lodash";
 import { Clipping, GroupedClipping } from "../interfaces";
 import { writeToFile, readFromFile, formatAuthorName } from "../utils";
+import { Highlight } from "../interfaces/clipping";
 
 export class Parser {
   private fileName = "My Clippings.txt";
   private regex =
-    /(.+) \((.+)\)\r*\n- [ ]?(?:Your Highlight|La subrayado|Your Note|La tua evidenziazione|\u60a8\u5728\u4f4d)(.+)\r*\n\r*\n(.+)/gm;
+    /(.+) \((.+)\)\r*\n- [ ]?(?:Your Highlight|La subrayado|La tua evidenziazione|\u60a8\u5728\u4f4d) (?:on Location|en la posición|alla posizione)[ ]([0-9]*)[-]?([0-9]*)?[ ](.+)\r*\n\r*\n(.+)/gm;
+  private regexNote =
+    /(.+) \((.+)\)\r*\n- [ ]?(?:Your Note|La tua nota|\u60a8\u5728\u4f4d) (?:on Location|en la posición|alla posizione)[ ]([0-9]*)[-]?([0-9]*)?[ ](.+)\r*\n\r*\n(.+)/gm;
   private splitter = /=+\r*\n/gm;
   private nonUtf8 = /\uFEFF/gmu;
   private clippings: Clipping[] = [];
@@ -18,7 +21,8 @@ export class Parser {
       console.log("--------------------------------------");
       console.log(`📝 Title: ${groupedClipping.title}`);
       console.log(`🙋 Author: ${groupedClipping.author}`);
-      console.log(`💯 Highlights Count: ${groupedClipping.highlights.length}`);
+      console.log(`💯 Highlights Count: ${groupedClipping.highlights.filter(x => !x.isNote).length}`);
+      console.log(`💯 Notes Count: ${groupedClipping.highlights.filter(x => x.isNote).length}`);
     }
     console.log("--------------------------------------");
   };
@@ -33,11 +37,28 @@ export class Parser {
     if (match) {
       const title = match[1];
       let author = formatAuthorName(match[2]);
-      const highlight = match[4];
+      const startPosition = Number(match[3]);
+      const endPosition = Number(match[4]);
+      const highlight = match[6];
+      const isNote = false;
 
-      this.clippings.push({ title, author, highlight });
+      this.clippings.push({ title, author, highlight,  startPosition, endPosition, isNote});
     }
   };
+
+    /* Method add the parsed clippings to the clippings array */
+    addNoteToClippingsArray = (match: RegExpExecArray | null) => {
+      if (match) {
+        const title = match[1];
+        let author = formatAuthorName(match[2]);
+        const startPosition = Number(match[3]);
+        const endPosition = undefined;
+        const highlight = match[6];
+        const isNote = true;
+  
+        this.clippings.push({ title, author, highlight, startPosition, endPosition, isNote});
+      }
+    };
 
   /* Method to group clippings (highlights) by the title of the book */
   groupClippings = () => {
@@ -47,8 +68,11 @@ export class Parser {
       .map((clippings, title) => ({
         title,
         author: clippings[0].author,
-        highlights: clippings.map((clipping) => clipping.highlight),
-      }))
+        highlights:clippings.map<Highlight>((clipping) => ({
+          highlight: clipping.highlight,
+          startPosition: clipping.startPosition,
+          endPosition: clipping.endPosition,
+          isNote: clipping.isNote}))}))
       .value();
 
     // remove duplicates in the highlights for each book
@@ -75,8 +99,19 @@ export class Parser {
     for (let i = 0; i < clippingsSplit.length - 1; i++) {
       const clipping = clippingsSplit[i];
       const regex = new RegExp(this.regex.source);
-      const match = regex.exec(clipping);
-      this.addToClippingsArray(match);
+      var match = regex.exec(clipping);
+
+      if(match != null)
+      {
+        console.log("Found highlight..")
+        this.addToClippingsArray(match);
+      }
+      else{
+        console.log("Finding note..")
+        const regexNote = new RegExp(this.regexNote.source);
+        match = regexNote.exec(clipping);
+        this.addNoteToClippingsArray(match);
+      }
     }
   };
 

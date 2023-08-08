@@ -3,14 +3,14 @@ import { NotionAdapter } from "../adapters";
 import { GroupedClipping } from "../interfaces";
 import { CreatePageParams, Emoji, BlockType } from "../interfaces";
 import {
-  makeHighlightsBlocks,
   updateSync,
   getUnsyncedHighlights,
-  makeBlocks,
 } from "../utils";
+import { makeHighlighsAndNoteBlocks } from "../utils/notion";
+import { Highlight } from "../interfaces/clipping";
 
  
-async function createNewbookHighlights(title: string, author: string, highlights: string[],  notionInstance: NotionAdapter) {
+async function createNewbookHighlights(title: string, author: string, highlights: Highlight[],  notionInstance: NotionAdapter) {
   const createPageParams: CreatePageParams = {
     parentDatabaseId: process.env.BOOK_DB_ID as string,
     properties: {
@@ -18,7 +18,7 @@ async function createNewbookHighlights(title: string, author: string, highlights
       author: author,
       bookName: title,
     },
-    children: makeHighlightsBlocks(highlights, BlockType.quote),
+    children: makeHighlighsAndNoteBlocks(highlights, BlockType.quote),
     icon: Emoji["🔖"],
   }
   await notionInstance.createPage(createPageParams);
@@ -30,9 +30,6 @@ export class Notion {
   constructor() {
     this.notion = new NotionAdapter();
   }
-
-
-
 
   /* Method to get Notion block id of the Notion page given the book name */
   getIdFromBookName = async (bookName: string) => {
@@ -76,7 +73,7 @@ export class Notion {
             if(book.highlights.length <= 100) {
               await this.notion.appendBlockChildren(
                 bookId,
-                makeBlocks(book.highlights, BlockType.quote)
+                makeHighlighsAndNoteBlocks(book.highlights, BlockType.quote)
               );
             } else {
               // handle pagination if there are more than 100 highlights
@@ -84,7 +81,7 @@ export class Notion {
               while(highlightsTracker < book.highlights.length) {
                 await this.notion.appendBlockChildren(
                   bookId,
-                  makeBlocks(book.highlights.slice(highlightsTracker, highlightsTracker+99), BlockType.quote)
+                  makeHighlighsAndNoteBlocks(book.highlights.slice(highlightsTracker, highlightsTracker+99), BlockType.quote)
                 );
                 highlightsTracker+=99;
               }
@@ -108,7 +105,7 @@ export class Notion {
                   if(newBookId) {
                     await this.notion.appendBlockChildren(
                       newBookId, 
-                      makeBlocks(book.highlights.slice(highlightsTracker, highlightsTracker+99), BlockType.quote)
+                      makeHighlighsAndNoteBlocks(book.highlights.slice(highlightsTracker, highlightsTracker+99), BlockType.quote)
                     );
                     highlightsTracker += 99;
                   }
