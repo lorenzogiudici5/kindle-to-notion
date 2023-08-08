@@ -1,7 +1,7 @@
 require("dotenv").config();
 import { NotionAdapter } from "../adapters";
 import { GroupedClipping } from "../interfaces";
-import { CreatePageParams, Emoji, BlockType } from "../interfaces";
+import { CreatePageParams, Emoji } from "../interfaces";
 import {
   updateSync,
   getUnsyncedHighlights,
@@ -18,7 +18,7 @@ async function createNewbookHighlights(title: string, author: string, highlights
       author: author,
       bookName: title,
     },
-    children: makeHighlighsAndNoteBlocks(highlights, BlockType.quote),
+    children: makeHighlighsAndNoteBlocks(highlights),
     icon: Emoji["🔖"],
   }
   await notionInstance.createPage(createPageParams);
