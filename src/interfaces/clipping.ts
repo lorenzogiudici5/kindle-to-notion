@@ -2,7 +2,7 @@ export interface Clipping {
   title: string;
   author: string;
   highlight: string;
-  page: Number;
+  page: number;
   startPosition: number;
   endPosition?: number;
   isNote: boolean;
