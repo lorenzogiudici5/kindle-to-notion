@@ -6,9 +6,9 @@ import { Highlight } from "../interfaces/clipping";
 export class Parser {
   private fileName = "My Clippings.txt";
   private regex =
-    /(.+) \((.+)\)\r*\n- [ ]?(?:Your Highlight|La subrayado|La tua evidenziazione|\u60a8\u5728\u4f4d) (?:on Location|en la posición|alla posizione)[ ]([0-9]*)[-]?([0-9]*)?[ ](.+)\r*\n\r*\n(.+)/gm;
+    /(?<BookName>.+) \((?<Author>.+)\)\r*\n- [ ]?(?:Your Highlight|La subrayado|La tua evidenziazione|\u60a8\u5728\u4f4d) (?:on Location|en la posición|alla posizione|a pagina (?<Page>[0-9]+) \| posizione)[ ](?<StartPosition>[0-9]*)[-]?(?<EndPosition>[0-9]*)?[ ](.+)\r*\n\r*\n(?<Note>.+)/gm;
   private regexNote =
-    /(.+) \((.+)\)\r*\n- [ ]?(?:Your Note|La tua nota|\u60a8\u5728\u4f4d) (?:on Location|en la posición|alla posizione)[ ]([0-9]*)[-]?([0-9]*)?[ ](.+)\r*\n\r*\n(.+)/gm;
+    /(?<BookName>.+) \((?<Author>.+)\)\r*\n- [ ]?(?:Your Note|La tua nota|\u60a8\u5728\u4f4d) (?:on Location|en la posición|alla posizione|a pagina (?<Page>[0-9]+) \| posizione)[ ](?<StartPosition>[0-9]*)[ ](.+)\r*\n\r*\n(?<Note>.+)/gm
   private splitter = /=+\r*\n/gm;
   private nonUtf8 = /\uFEFF/gmu;
   private clippings: Clipping[] = [];
@@ -31,32 +31,36 @@ export class Parser {
   exportGroupedClippings = () => {
     writeToFile(this.groupedClippings, "grouped-clippings.json", "data");
   };
-
+ 
   /* Method add the parsed clippings to the clippings array */
   addToClippingsArray = (match: RegExpExecArray | null) => {
     if (match) {
-      const title = match[1];
-      let author = formatAuthorName(match[2]);
-      const startPosition = Number(match[3]);
-      const endPosition = Number(match[4]);
-      const highlight = match[6];
+      const groups = (match as any).groups as MatchGroups;      
+      const title = groups.BookName;
+      let author = formatAuthorName(groups.Author);
+      const page = Number(groups.Page);
+      const startPosition = Number(groups.StartPosition);
+      const endPosition = Number(groups.EndPosition);
+      const highlight = groups.Note;
       const isNote = false;
-
-      this.clippings.push({ title, author, highlight, startPosition, endPosition, isNote });
+  
+      this.clippings.push({ title, author, highlight, page, startPosition, endPosition, isNote });
     }
   };
-
+  
   /* Method add the parsed clippings to the clippings array */
   addNoteToClippingsArray = (match: RegExpExecArray | null) => {
     if (match) {
-      const title = match[1];
-      let author = formatAuthorName(match[2]);
-      const startPosition = Number(match[3]);
+      const groups = (match as any).groups as MatchGroups;
+      const title = groups.BookName;
+      let author = formatAuthorName(groups.Author);
+      const page = Number(groups.Page);
+      const startPosition = Number(groups.StartPosition);
       const endPosition = undefined;
-      const highlight = match[6];
+      const highlight = groups.Note;
       const isNote = true;
 
-      this.clippings.push({ title, author, highlight, startPosition, endPosition, isNote });
+      this.clippings.push({ title, author, highlight, page, startPosition, endPosition, isNote });
     }
   };
 
@@ -70,6 +74,7 @@ export class Parser {
         author: clippings[0].author,
         highlights: clippings.map<Highlight>((clipping) => ({
           highlight: clipping.highlight,
+          page: clipping.page,
           startPosition: clipping.startPosition,
           endPosition: clipping.endPosition,
           isNote: clipping.isNote
@@ -122,4 +127,13 @@ export class Parser {
     this.printStats();
     return this.groupedClippings;
   };
+}
+
+interface MatchGroups {
+  BookName: string;
+  Author: string;
+  Page: string;
+  StartPosition: string;
+  EndPosition: string;
+  Note: string;
 }

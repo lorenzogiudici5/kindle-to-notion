@@ -34,7 +34,8 @@ export const makeBlocks = (highlights: string[], type: BlockType): Block[] => {
 export const makeHighlighsAndNoteBlocks = (highlights: Highlight[]): Block[] => {
   const blocks: Block[] = [];
   for (const highlight of highlights) {
-    const position = " [" + highlight.startPosition + (highlight.endPosition != undefined ? "-" + highlight.endPosition : "") + "]"
+    // extract page and positions info to print at the end of the note
+    const position = " [" + (highlight.page != undefined ? "Page: " + highlight.page + ", " : "") + "Pos: " + highlight.startPosition + (highlight.endPosition != undefined ? "-" + highlight.endPosition : "") + "]"
     // truncate the highlight to a maximum length of 2000 character due to Notion API limitation
     const validHighlight =
       highlight.highlight.length > 2000 - position.length ? highlight.highlight.substring(0, 2000 - position.length) : highlight.highlight;
