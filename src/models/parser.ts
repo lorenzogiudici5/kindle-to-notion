@@ -6,8 +6,7 @@ import { Highlight } from "../interfaces/clipping";
 export class Parser {
   private fileName = "My Clippings.txt";
   private regex =
-    /(?<BookName>.+) \((?<Author>.+)\)\r*\n- [ ]?(?:Your Highlight|La subrayado|La tua evidenziazione|\u60a8\u5728\u4f4d) (?:on Location|en la posición|alla posizione|a pagina (?<Page>[0-9]+) \| posizione)[ ](?<StartPosition>[0-9]*)[-]?(?<EndPosition>[0-9]*)?[ ](.+)\r*\n\r*\n(?<Note>.+)/gm;
-  private regexNote =
+    /(?<BookName>.+) \((?<Author>.+)\)\r*\n- [ ]?(?:Your Highlight|La subrayado|La tua evidenziazione|La mia evidenziazione|\u60a8\u5728\u4f4d) (?:on Location|en la posición|Posizione|alla posizione|a pagina (?<Page>[0-9]+) \| posizione)[ ](?<StartPosition>[0-9]*)[-]?(?<EndPosition>[0-9]*)?[ ](.+)\r*\n\r*\n(?<Note>.+)/gm;  private regexNote =
     /(?<BookName>.+) \((?<Author>.+)\)\r*\n- [ ]?(?:Your Note|La tua nota|\u60a8\u5728\u4f4d) (?:on Location|en la posición|alla posizione|a pagina (?<Page>[0-9]+) \| posizione)[ ](?<StartPosition>[0-9]*)[ ](.+)\r*\n\r*\n(?<Note>.+)/gm
   private splitter = /=+\r*\n/gm;
   private nonUtf8 = /\uFEFF/gmu;
