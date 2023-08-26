@@ -37,7 +37,11 @@ export class Parser {
       const groups = (match as any).groups as MatchGroups;      
       const title = groups.BookName;
       let author = formatAuthorName(groups.Author);
-      const page = Number(groups.Page);
+      let page;
+      if (!isNaN(Number(groups.Page))) {
+        page = Number(groups.Page);
+      }
+      
       const startPosition = Number(groups.StartPosition);
       const endPosition = Number(groups.EndPosition);
       const highlight = groups.Note;

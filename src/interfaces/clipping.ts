@@ -2,7 +2,7 @@ export interface Clipping {
   title: string;
   author: string;
   highlight: string;
-  page: number;
+  page?: number;
   startPosition: number;
   endPosition?: number;
   isNote: boolean;
@@ -22,7 +22,7 @@ export interface Sync {
 
 export interface Highlight {
   highlight: string;
-  page: number;
+  page?: number;
   startPosition: number;
   endPosition?: number;
   isNote: boolean;
